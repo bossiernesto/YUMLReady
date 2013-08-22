@@ -1,4 +1,5 @@
 import urllib2
+import urllib
 from YUMLDiagram import YUMLDiagram
 
 class RequestHelper(object):
@@ -21,6 +22,10 @@ class RequestHelper(object):
         opener.addheaders = [('User-agent', 'Mozilla/6.0')]
         return opener
 
+    def postContent(self,url,content):
+        data = urllib.urlencode(content)
+        return urllib2.Request(url, data)
+
 class YUMLServiceAbstract(object):
 
     def __init__(self):
@@ -32,15 +37,22 @@ class YUMLServiceAbstract(object):
 
 class YUMLService(YUMLServiceAbstract):
 
+    DRAW_URL = 'http://yuml.me/diagram/scruffy/class/draw'
     CLASS_PREFIX_URL = 'http://yuml.me/diagram/scruffy;/class'
     EDIT_LATER_LABEL= '/edit'
     FORMATS = {'PNG':'','JPEG':'jpg','JPG':'jpg','JSON':'json','SVG':'svg','PDF':'pdf'}
 
-    def buildDiagram(self, diagram):
+    def buildDiagram(self, diagram,  shortUrl = False):
         if not isinstance(diagram,YUMLDiagram):
             raise Exception('{0} is not an instance of {1}.'.format(diagram,YUMLDiagram.__name__))
         url = self.CLASS_PREFIX_URL
 
+    def postDiragram(self):
+        values = {'dsl_text' : self.diagram.convertToService()}
+        self.request.postContent(self.DRAW_URL,values)
+
+    def getShortUrl(self):
+        pass
 
     def fecthFormat(self, format):
         if not self.diagram:
@@ -49,10 +61,3 @@ class YUMLService(YUMLServiceAbstract):
             return '.'+self.FORMATS[format]
         except AttributeError:
             raise Exception('Invalid type of format: {0}'.format(format))
-
-class YUMLBHService(YUMLService):
-
-    def __init__(self):
-        import getpass
-        YUMLService.__init__()
-        self.request.setProxyHandler(user=getpass.getuser(),password='',proxy='proxy.bh.com.ar')
