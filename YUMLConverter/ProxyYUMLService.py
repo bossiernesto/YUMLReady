@@ -1,6 +1,33 @@
+"""
+.. module:: YUMLReady Service
+   :platform: Linux
+   :synopsis:  Classes to interact with the YUML.me service
+   :copyright: (c) 2013 by Ernesto Bossi.
+   :license: BSD.
+
+.. moduleauthor:: Ernesto Bossi <bossi.ernestog@gmail.com>
+"""
 import urllib2
 import urllib
 from YUMLDiagram import YUMLDiagram
+from lxml import etree
+import io
+
+# Type checking
+def isObjOfType(obj,_type):
+    return type(obj) in ([_type] + _type.__subclasses__())
+
+class XPathExtractor(object):
+    """
+        Extractor using Xpath
+    """
+
+    def get_object(self, data):
+
+        parser = etree.HTMLParser()
+        memObj= io.StringIO if isObjOfType(data,unicode) else io.BytesIO
+        html = etree.parse(memObj(data), parser)
+        return html
 
 class RequestHelper(object):
 
@@ -24,13 +51,17 @@ class RequestHelper(object):
 
     def postContent(self,url,content):
         data = urllib.urlencode(content)
-        return urllib2.Request(url, data)
+        req = urllib2.Request(url, data)
+        return self.getResource().open(req)
 
 class YUMLServiceAbstract(object):
 
     def __init__(self):
         self.request = RequestHelper()
         self.diagram= None
+
+    def postResource(self,url,data):
+            return self.request.postContent(url, data)
 
     def getResource(self,url):
             return self.request.getResource().open(url)
@@ -46,18 +77,23 @@ class YUMLService(YUMLServiceAbstract):
         if not isinstance(diagram,YUMLDiagram):
             raise Exception('{0} is not an instance of {1}.'.format(diagram,YUMLDiagram.__name__))
         url = self.CLASS_PREFIX_URL
+        #call visitor to populate all options
+        self.urlDiagram = url
 
     def postDiragram(self):
         values = {'dsl_text' : self.diagram.convertToService()}
-        self.request.postContent(self.DRAW_URL,values)
+        return self.postResource(self.DRAW_URL,values).read()
 
     def getShortUrl(self):
-        pass
+        extractor = XPathExtractor().get_object(self.postDiragram())
+        self.shortUrl = extractor.xpath('//*[@id="content"]/p[4]/a')
+        return  self.shortUrl
 
-    def fecthFormat(self, format):
+    def fetchFormat(self, format):
         if not self.diagram:
             raise Exception('Diagram not submitted')
         try:
-            return '.'+self.FORMATS[format]
+            url = self.shortUrl if self.shortUrl else self.urlDiagram
+            return url + '.' + self.FORMATS[format]
         except AttributeError:
             raise Exception('Invalid type of format: {0}'.format(format))
