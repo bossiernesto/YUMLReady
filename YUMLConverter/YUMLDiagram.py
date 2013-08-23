@@ -1,3 +1,4 @@
+import inspect
 
 #Asociations
 SIMPLE_AsSOCIATION = '->'
@@ -18,6 +19,7 @@ DIRECRTION_Right_to_Left = 'RL'
 
 VALID_DIRECTIONS = [DIRECRTION_Right_to_Left,DIRECRTION_TopDown,DIRECTION_Left_to_Right]
 
+
 class YUMLDiagram(object):
 
     def __init__(self):
@@ -27,10 +29,13 @@ class YUMLDiagram(object):
         self.notes = []
 
     def setNote(self,note):
-        self.notes.append(YUMLNote().setNote(note))
+        self.notes.append(YUMLNote(note))
 
     def setSize(self, size):
         pass
+
+    def setClass(self, klass):
+        self.classes.append(YUMLClass(klass))
 
     def setDirection(self, direction):
         if not direction in VALID_DIRECTIONS:
@@ -46,12 +51,23 @@ class YUMLObject(object):
     def convertToService(self):
         raise NotImplementedError
 
+
 class YUMLClass(object):
-    pass
+
+    def __init__(self, klass):
+        self.klass = klass
+        self.introspectClass()
+
+    def introspectClass(self):
+        self.methods = inspect.getmembers(self.klass, predicate=inspect.ismethod)
+        attributes = inspect.getmembers(self.klass, lambda a: not(inspect.isroutine(a)))
+        self.attributes = [a for a in attributes if not(a[0].startswith('__') and a[0].endswith('__'))]
+        self.className = self.klass.__name__
+
 
 class YUMLNote(YUMLObject):
 
-    def setNote(self,note):
+    def __init__(self, note):
         self.note = note
 
     def convertToService(self):

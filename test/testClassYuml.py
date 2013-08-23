@@ -2,6 +2,8 @@ from unittest import TestCase
 from YUMLConverter import YUMLConverter
 
 #Example class used for testing
+
+
 class A(object):
 
     def __init__(self):
