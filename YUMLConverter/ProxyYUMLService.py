@@ -28,7 +28,7 @@ class XPathExtractor(object):
     def get_object(self, data):
 
         parser = etree.HTMLParser()
-        memObj= io.StringIO if isObjOfType(data, unicode) else io.BytesIO
+        memObj = io.StringIO if isObjOfType(data, unicode) else io.BytesIO
         html = etree.parse(memObj(data), parser)
         return html
 
@@ -70,6 +70,7 @@ class YUMLServiceAbstract(object):
 
     def getResource(self, url):
             return self.request.getResource().open(url)
+
 
 class YUMLService(YUMLServiceAbstract):
 

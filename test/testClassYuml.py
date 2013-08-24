@@ -1,26 +1,27 @@
 from unittest import TestCase
-from YUMLConverter import YUMLConverter
-
-#Example class used for testing
+from YUMLConverter.YUMLConverter import YUMLConverter
 
 
 class A(object):
-
+    """
+    Example class used for testing
+    """
     def __init__(self):
-        self.a=1
-        self.j='AAAA'
-        self.b='sss'
+        self.a = 1
+        self.j = 'AAAA'
+        self.b = 'sss'
 
-    def bleh(self):
+    def method1(self):
         pass
 
-    def jejeje(self):
+    def anotherMethod(self):
         pass
 
-class  testToYUML(TestCase):
+
+class testToYUML(TestCase):
 
     def setUp(self):
-        self.converter=YUMLConverter()
-        self.aClass=A
-        self.aInstance=A()
+        self.converter = YUMLConverter()
+        self.aClass = A
+        self.aInstance = A()
 

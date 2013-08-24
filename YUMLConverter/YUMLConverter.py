@@ -7,3 +7,13 @@
 
 .. moduleauthor:: Ernesto Bossi <bossi.ernestog@gmail.com>
 """
+from YUMLDiagram import *
+
+
+class YUMLConverter(object):
+
+    def __init__(self):
+        self.resetDiagram()
+
+    def resetDiagram(self):
+        self.diagram = YUMLDiagram()
