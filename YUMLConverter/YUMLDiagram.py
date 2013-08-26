@@ -46,16 +46,32 @@ class YUMLDiagram(object):
         self.direction = None
         self.size = None
         self.classes = []
+        self.relations = []
         self.notes = []
+        self.scale = None
 
-    def setNote(self, note):
+    def addNote(self, note):
         self.notes.append(YUMLNote(note))
 
     def setSize(self, size):
-        pass
+        if isValidScale(size):
+            self.size = size
 
-    def setClass(self, klass):
-        self.classes.append(YUMLClass(klass))
+    def setScale(self, scale):
+        if isValidScale(scale):
+           self.scale = None if scale == SCALE_NORMAL else scale
+
+    def addRelation(self, relation):
+        try:
+            for relationship in self.relations:
+                relationship.isSameRelation(relation)
+            self.relations.append(relation)
+        except ExistingRelationException:
+            return #returns as it's trying to enter an existing relation in the diagram
+
+    def addClass(self, klass):
+        if not klass in self.classes:
+            self.classes.append(YUMLClass(klass))
 
     def setDirection(self, direction):
         if not direction in VALID_DIRECTIONS:
@@ -65,14 +81,26 @@ class YUMLDiagram(object):
 
 class YUMLObject(object):
 
-    def setBackground(self, background):
+    def setBackground(self, background): #TODO: set valid colors list
         self.bg = background
 
     def convertToService(self):
         raise NotImplementedError
 
 
-class YUMLClass(object):
+class YUMLConnector(object):
+
+    def __init__(self, object1, object2):
+        self.fromObject = object1
+        self.ToObject = object2
+
+    def setBackground(self):
+        raise NotImplementedError
+
+    def convertToService(self):
+        pass
+
+class YUMLClass(YUMLObject):
 
     def __init__(self, klass):
         self.klass = klass
@@ -101,3 +129,5 @@ class YUMLComment(YUMLObject):
 
     def convertToService(self):
         return "// {0}".format(self.comment)
+
+class ExistingRelationException(Exception): pass
