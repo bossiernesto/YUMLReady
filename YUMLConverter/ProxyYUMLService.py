@@ -9,12 +9,10 @@
 """
 import urllib2
 import urllib
-from YUMLDiagram import YUMLDiagram
+from YUMLVisitor import YUMLVisitor
 from lxml import etree
 import io
-
-# Type checking
-
+from utils.cookieJar import YUMLCookieJar
 
 def isObjOfType(obj,_type):
     return type(obj) in ([_type] + _type.__subclasses__())
@@ -37,6 +35,7 @@ class RequestHelper(object):
 
     def __init__(self):
         self.handlers = []
+        self.handlers.append(YUMLCookieJar())
 
     def setProxyHandler(self, user, password, proxy, port='80'):
         """Proxy hanlder"""
@@ -63,7 +62,7 @@ class YUMLServiceAbstract(object):
 
     def __init__(self):
         self.request = RequestHelper()
-        self.diagram = None
+        self.visitor = None
 
     def postResource(self, url, data):
             return self.request.postContent(url, data)
@@ -79,27 +78,34 @@ class YUMLService(YUMLServiceAbstract):
     EDIT_LATER_LABEL = '/edit'
     FORMATS = {'PNG': '', 'JPEG': 'jpg', 'JPG': 'jpg', 'JSON': 'json', 'SVG': 'svg', 'PDF': 'pdf'}
 
-    def buildDiagram(self, diagram,  shortUrl=False):
-        if not isinstance(diagram, YUMLDiagram):
-            raise Exception('{0} is not an instance of {1}.'.format(diagram, YUMLDiagram.__name__))
-        url = self.CLASS_PREFIX_URL
-        #call visitor to populate all options
-        self.urlDiagram = url
+    def buildDiagram(self, visitor,  shortUrl=False):
+        self.cleanDiagram()
+        self.visitor = visitor
+        self.getShortUrl() if shortUrl else self.postDiagram(self.visitor.convertToService())
 
-    def postDiragram(self):
-        values = {'dsl_text': self.diagram.convertToService()}
-        return self.postResource(self.DRAW_URL, values).read()
+    def setUrlDiagram(self,url):
+        self.urlDiagram = self.CLASS_PREFIX_URL + url
+
+    def setDSLText(self, value):
+        self.values = {'dsl_text': value}
+
+    def cleanDiagram(self):
+        self.postDiagram('')
+
+    def postDiagram(self, value):
+        self.setDSLText(value)
+        return self.postResource(self.DRAW_URL, self.values).read()
 
     def getShortUrl(self):
-        extractor = XPathExtractor().get_object(self.postDiragram())
+        extractor = XPathExtractor().get_object(self.postDiagram(self.visitor.convertToService()))
         self.shortUrl = extractor.xpath('//*[@id="content"]/p[4]/a')
         return self.shortUrl
 
     def fetchFormat(self, format):
-        if not self.diagram:
+        if not self.visitor:
             raise Exception('Diagram not submitted')
         try:
-            url = self.shortUrl if self.shortUrl else self.urlDiagram
+            url = self.shortUrl if self.shortUrl else self.setUrlDiagram(self.visitor.convertToImport())
             return url + '.' + self.FORMATS[format]
         except AttributeError:
             raise Exception('Invalid type of format: {0}'.format(format))

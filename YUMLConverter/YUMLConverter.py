@@ -7,8 +7,16 @@
 
 .. moduleauthor:: Ernesto Bossi <bossi.ernestog@gmail.com>
 """
-from YUMLDiagram import *
+import sys
+import string
+from YUMLDiagram import YUMLDiagram,VALID_COLORS,YUMLClass,YUMLComment,YUMLNote
+from YUMLDiagram import DIRECRTION_Right_to_Left,DIRECRTION_TopDown,DIRECTION_Left_to_Right
+from YUMLDiagram import NOTE_ASSOCIATION,SIMPLE_ASSOCIATION,CARDINALITY,DIRECTIONAL_ASSOCIATION,AGGREGATION,AGGREGATION_WITH_NUMBER,\
+AGGREGATION_WITH_NUMBERS,COMPOSITION,INHERITANCE,INTERFACE_INHERITANCE,DEPENDENCIES
+from YUMLDiagram import SCALE_HUGE,SCALE_BIG,SCALE_SMALL,SCALE_TINY,SCALE_NORMAL
 
+for color in VALID_COLORS:
+    setattr(sys.modules[__name__],string.upper(color),color)
 
 class YUMLConverter(object):
 
