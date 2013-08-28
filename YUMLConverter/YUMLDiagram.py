@@ -136,10 +136,17 @@ class YUMLClass(YUMLObject):
         self.attributes = [a for a in attributes if not(a[0].startswith('__') and a[0].endswith('__'))]
         self.className = self.classDeclaration.__name__
 
+    def getAttributes(self):
+        return '' if not self.attributes else '|'+';'.join([attr for attr in self.attributes])
+
+    def getMethods(self):
+        return '' if not self.methods else '|'+';'.join([method+"()" for method in self.methods])
+
+    def getClassName(self):
+        return self.className+"{bg:{0}}".format(self.bg) if self.bg else self.className
+
     def convertToService(self):
-        return "[{0}|{1}|{2}]".format(self.className+"{bg:{0}}".format(self.bg) if self.bg else self.className,
-                                ';'.join([attr for attr in self.attributes]),
-                                ';'.join([method+"()" for method in self.methods]))
+        return "[{0}{1}{2}]".format(self.getClassName(),self.getAttributes(),self.getMethods())
 
 class YUMLNote(YUMLObject):
 

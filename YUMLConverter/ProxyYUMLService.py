@@ -9,7 +9,6 @@
 """
 import urllib2
 import urllib
-from YUMLVisitor import YUMLVisitor
 from lxml import etree
 import io
 from utils.cookieJar import YUMLCookieJar
