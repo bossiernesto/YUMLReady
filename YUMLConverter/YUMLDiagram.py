@@ -11,6 +11,12 @@ import inspect
 from YUMLRules import *
 from YUMLVisitor import YUMLVisitor
 
+def createvarIfNotExists(obj, var, initial):
+    try:
+        getattr(obj, var)
+    except AttributeError:
+        setattr(obj, var, initial)
+
 #Asociations
 NOTE_ASSOCIATION = '-'
 SIMPLE_ASSOCIATION = '->'
@@ -41,7 +47,8 @@ SCALE_NORMAL = ""
 isValidScale = lambda (scale): scale in VALID_SCALES
 VALID_SCALES = [SCALE_HUGE, SCALE_BIG, SCALE_SMALL, SCALE_TINY, SCALE_NORMAL]
 
-VALID_COLORS = ["orange","blue","red","black","white","brown","magenta","green","pink","violet","grey"]
+VALID_COLORS = ["orange", "blue", "red", "black", "white", "brown", "magenta", "green", "pink", "violet", "grey"]
+
 
 class YUMLDiagram(object):
 
@@ -58,7 +65,7 @@ class YUMLDiagram(object):
 
     def setScale(self, scale):
         if isValidScale(scale):
-           self.scale = None if scale == SCALE_NORMAL else scale
+            self.scale = None if scale == SCALE_NORMAL else scale
 
     def addRelation(self, relation):
         try:
@@ -66,7 +73,8 @@ class YUMLDiagram(object):
                 relationship.isSameRelation(relation)
             self.relations.append(relation.checkObjects(self))
         except ExistingRelationException:
-            return #returns as it's trying to enter an existing relation in the diagram
+            #returns as it's trying to enter an existing relation in the diagram
+            return
 
     def checkObject(self, classObject):
         self.addClass(classObject)
@@ -98,6 +106,7 @@ class YUMLObject(object):
     def convertToService(self):
         raise NotImplementedError
 
+
 class YUMLConnector(YUMLObject):
 
     CONNECTOR_RULES = [NoteConnectionRule]
@@ -121,6 +130,7 @@ class YUMLConnector(YUMLObject):
         diagram.checkObject(self.fromObject)
         diagram.checkObject(self.toObject)
 
+
 class YUMLClass(YUMLObject):
 
     CLASS_RULES = [ReservedClassName]
@@ -137,16 +147,18 @@ class YUMLClass(YUMLObject):
         self.className = self.classDeclaration.__name__
 
     def getAttributes(self):
-        return '' if not self.attributes else '|'+';'.join([attr for attr in self.attributes])
+        return '|' if not self.attributes else '|'+';'.join([attr[0] for attr in self.attributes])
 
     def getMethods(self):
-        return '' if not self.methods else '|'+';'.join([method+"()" for method in self.methods])
+        return '' if not self.methods else '|'+';'.join([method[0]+"()" for method in self.methods])
 
     def getClassName(self):
+        createvarIfNotExists(self, 'bg', None)
         return self.className+"{bg:{0}}".format(self.bg) if self.bg else self.className
 
     def convertToService(self):
-        return "[{0}{1}{2}]".format(self.getClassName(),self.getAttributes(),self.getMethods())
+        return "[{0}{1}{2}]".format(self.getClassName(), self.getAttributes(), self.getMethods())
+
 
 class YUMLNote(YUMLObject):
 
@@ -155,6 +167,7 @@ class YUMLNote(YUMLObject):
 
     def convertToService(self):
         return "[note: {0}{bg:{1}}]".format(self.note, self.bg) if self.bg else "[note: {0}]".format(self.note)
+
 
 class YUMLComment(YUMLObject):
 

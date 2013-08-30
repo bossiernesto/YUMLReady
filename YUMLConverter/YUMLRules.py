@@ -1,5 +1,5 @@
-from YUMLDiagram import YUMLNote,NOTE_ASSOCIATION,YUMLReadyException
 import keyword
+
 
 def areInstance(objects, klass):
     return all([isinstance(object, klass)for object in objects])
@@ -14,7 +14,7 @@ class YUMLRule(object):
 class NoteConnectionRule(YUMLRule):
 
     def checkRule(self, object):
-        if areInstance([object.fromObject,object.toObject],YUMLNote) and object.associationType != NOTE_ASSOCIATION:
+        if areInstance([object.fromObject, object.toObject], YUMLNote) and object.associationType != NOTE_ASSOCIATION:
                 object.setAssociationType(NOTE_ASSOCIATION)
 
 class ReservedClassName(YUMLRule):
