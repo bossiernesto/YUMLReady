@@ -15,7 +15,7 @@ class NoteConnectionRule(YUMLRule):
 
     def checkRule(self, object):
         if areInstance([object.fromObject, object.toObject], YUMLNote) and object.associationType != NOTE_ASSOCIATION:
-                object.setAssociationType(NOTE_ASSOCIATION)
+                object.set_association_type(NOTE_ASSOCIATION)
 
 class ReservedClassName(YUMLRule):
 

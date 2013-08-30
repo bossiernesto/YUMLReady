@@ -56,40 +56,40 @@ class YUMLDiagram(object):
         self.direction = None
         self.scale = None
         self.classes = []
-        self.relations = []
+        self.connectors = []
         self.notes = []
         self.comments = []
 
-    def addNote(self, note):
+    def add_note(self, note):
         self.notes.append(YUMLNote(note))
 
-    def setScale(self, scale):
+    def set_scale(self, scale):
         if isValidScale(scale):
             self.scale = None if scale == SCALE_NORMAL else scale
 
-    def addRelation(self, relation):
+    def add_relation(self, relation):
         try:
-            for relationship in self.relations:
-                relationship.isSameRelation(relation)
-            self.relations.append(relation.checkObjects(self))
+            for connector in self.connectors:
+                connector.is_same_connector(relation)
+            self.connectors.append(relation.check_objects(self))
         except ExistingRelationException:
             #returns as it's trying to enter an existing relation in the diagram
             return
 
-    def checkObject(self, classObject):
-        self.addClass(classObject)
+    def check_object(self, classObject):
+        self.add_class(classObject)
 
-    def addClass(self, classDeclaration):
+    def add_class(self, classDeclaration):
         if not classDeclaration in self.classes:
             self.classes.append(YUMLClass(classDeclaration))
 
-    def setDirection(self, direction):
+    def set_direction(self, direction):
         if not direction in VALID_DIRECTIONS:
             raise ValueError('Direction {0} is not a valid one.'.format(direction))
         self.direction = direction
 
-    def materializeDiagram(self):
-        YUMLVisitor().materializeDiagram(self)
+    def materialize_diagram(self):
+        YUMLVisitor().materialize_diagram(self)
 
 
 class YUMLObject(object):
@@ -98,12 +98,12 @@ class YUMLObject(object):
         for rule in rules:
             rule().checkRule(self)
 
-    def setBackground(self, background):
+    def set_background(self, background):
         if not background in VALID_COLORS:
             raise YUMLReadyException("Color {0} not in valid colors.".format(background))
         self.bg = background
 
-    def convertToService(self):
+    def convert_to_service(self):
         raise NotImplementedError
 
 
@@ -117,18 +117,22 @@ class YUMLConnector(YUMLObject):
         self.toObject = ToObject
         self.checkRules(self.CONNECTOR_RULES)
 
-    def setAssociationType(self,association):
+    def is_same_connector(self, connector):
+        if self.fromObject == connector.fromObject and self.toObject == connector.toObject:
+            raise ExistingRelationException('connector {0} is the same as {1}'.format(connector, self))
+
+    def set_association_type(self, association):
         self.association = association
 
-    def setBackground(self, background):
+    def set_background(self, background):
         raise NotImplementedError
 
-    def convertToService(self):
-        return "[{0}]{1}[{2}]".format(self.fromObject,self.association,self.toObject)
+    def convert_to_service(self):
+        return "[{0}]{1}[{2}]".format(self.fromObject, self.association, self.toObject)
 
-    def checkObjects(self, diagram):
-        diagram.checkObject(self.fromObject)
-        diagram.checkObject(self.toObject)
+    def check_objects(self, diagram):
+        diagram.check_object(self.fromObject)
+        diagram.check_object(self.toObject)
 
 
 class YUMLClass(YUMLObject):
@@ -137,27 +141,27 @@ class YUMLClass(YUMLObject):
 
     def __init__(self, classDeclaration):
         self.classDeclaration = classDeclaration
-        self.introspectClass()
+        self.introspect_class()
         self.checkRules(self.CLASS_RULES)
 
-    def introspectClass(self):
+    def introspect_class(self):
         self.methods = inspect.getmembers(self.classDeclaration, predicate=inspect.ismethod)
         attributes = inspect.getmembers(self.classDeclaration, lambda a: not(inspect.isroutine(a)))
         self.attributes = [a for a in attributes if not(a[0].startswith('__') and a[0].endswith('__'))]
         self.className = self.classDeclaration.__name__
 
-    def getAttributes(self):
+    def get_attributes(self):
         return '|' if not self.attributes else '|'+';'.join([attr[0] for attr in self.attributes])
 
-    def getMethods(self):
+    def get_methods(self):
         return '' if not self.methods else '|'+';'.join([method[0]+"()" for method in self.methods])
 
-    def getClassName(self):
+    def get_class_name(self):
         createvarIfNotExists(self, 'bg', None)
         return self.className+"{bg:{0}}".format(self.bg) if self.bg else self.className
 
-    def convertToService(self):
-        return "[{0}{1}{2}]".format(self.getClassName(), self.getAttributes(), self.getMethods())
+    def convert_to_service(self):
+        return "[{0}{1}{2}]".format(self.get_class_name(), self.get_attributes(), self.get_methods())
 
 
 class YUMLNote(YUMLObject):
@@ -165,7 +169,7 @@ class YUMLNote(YUMLObject):
     def __init__(self, note):
         self.note = note
 
-    def convertToService(self):
+    def convert_to_service(self):
         return "[note: {0}{bg:{1}}]".format(self.note, self.bg) if self.bg else "[note: {0}]".format(self.note)
 
 
@@ -174,11 +178,16 @@ class YUMLComment(YUMLObject):
     def __init__(self, comment):
         self.comment = comment
 
-    def setBackground(self, background):
+    def set_background(self, background):
         raise NotImplementedError
 
-    def convertToService(self):
+    def convert_to_service(self):
         return "// {0}".format(self.comment)
 
-class YUMLReadyException(Exception): pass
-class ExistingRelationException(YUMLReadyException): pass
+
+class YUMLReadyException(Exception):
+    pass
+
+
+class ExistingRelationException(YUMLReadyException):
+    pass

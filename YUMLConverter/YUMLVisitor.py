@@ -19,31 +19,31 @@ class YUMLVisitor(object):
         self.diagramImport = ''
         self.service = YUMLService()
 
-    def materializeDiagram(self,diagram):
-        if not isinstance(diagram,YUMLDiagram):
-            raise YUMLReadyException("Diagram {0} is not an instance of {1}".format(diagram,YUMLDiagram.__name__))
+    def materialize_diagram(self, diagram):
+        if not isinstance(diagram, YUMLDiagram):
+            raise YUMLReadyException("Diagram {0} is not an instance of {1}".format(diagram, YUMLDiagram.__name__))
         self.diagram = diagram
-        self.service.buildDiagram(self)
+        self.service.build_diagram(self)
 
-    def convertToImport(self):
-        self.diagramImport = self.convertToService().replace('\n',', ') #TODO: replace las ', ' for a ''
+    def convert_to_import(self):
+        self.diagramImport = self.convert_to_service().replace('\n', ', ')
 
-    def convertToService(self):
-        self.walkComments()
-        self.walkConnectors()
+    def convert_to_service(self):
+        self.walk_comments()
+        self.walk_connectors()
         return self.diagramService
 
-    def walkComments(self):
+    def walk_comments(self):
         for comment in self.diagram.comments:
-            self.diagramService += comment.convertToService()+'\n'
+            self.diagramService += comment.convert_to_service()+'\n'
             self.visitedObjects.append(comment)
 
-    def walkConnectors(self):
+    def walk_connectors(self):
         pass
 
-    def walkNotes(self):
+    def walk_notes(self):
         for note in self.diagram.notes:
             if note not in self.definedClasses:
-                self.diagramService += note.convertToService()+'\n'
+                self.diagramService += note.convert_to_service()+'\n'
                 self.definedClasses.append(note)
                 self.visitedObjects.append(note)

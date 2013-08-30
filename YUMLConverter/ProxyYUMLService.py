@@ -13,6 +13,7 @@ from lxml import etree
 import io
 from utils.cookieJar import YUMLCookieJar
 
+
 def isObjOfType(obj,_type):
     return type(obj) in ([_type] + _type.__subclasses__())
 
@@ -36,25 +37,25 @@ class RequestHelper(object):
         self.handlers = []
         self.handlers.append(YUMLCookieJar())
 
-    def setProxyHandler(self, user, password, proxy, port='80'):
+    def set_proxy_handler(self, user, password, proxy, port='80'):
         """Proxy hanlder"""
         handler = 'http://%s:%s@%s:%s' % (user, password, proxy, port)
         handlerAux = urllib2.ProxyHandler({'http': handler, 'https': handler})
         self.handlers.append(handlerAux)
 
-    def buildOpenerWrapper(self, func, args):
+    def build_opener_wrapper(self, func, args):
             """Partial helper function"""
             return func(*args)
 
-    def getResource(self):
-        opener = self.buildOpenerWrapper(urllib2.build_opener, self.handlers)
+    def get_resource(self):
+        opener = self.build_opener_wrapper(urllib2.build_opener, self.handlers)
         opener.addheaders = [('User-agent', 'Mozilla/6.0')]
         return opener
 
-    def postContent(self, url, content):
+    def post_content(self, url, content):
         data = urllib.urlencode(content)
         req = urllib2.Request(url, data)
-        return self.getResource().open(req)
+        return self.get_resource().open(req)
 
 
 class YUMLServiceAbstract(object):
@@ -63,11 +64,11 @@ class YUMLServiceAbstract(object):
         self.request = RequestHelper()
         self.visitor = None
 
-    def postResource(self, url, data):
-            return self.request.postContent(url, data)
+    def post_resource(self, url, data):
+            return self.request.post_content(url, data)
 
-    def getResource(self, url):
-            return self.request.getResource().open(url)
+    def get_resource(self, url):
+            return self.request.get_resource().open(url)
 
 
 class YUMLService(YUMLServiceAbstract):
@@ -77,34 +78,34 @@ class YUMLService(YUMLServiceAbstract):
     EDIT_LATER_LABEL = '/edit'
     FORMATS = {'PNG': '', 'JPEG': 'jpg', 'JPG': 'jpg', 'JSON': 'json', 'SVG': 'svg', 'PDF': 'pdf'}
 
-    def buildDiagram(self, visitor,  shortUrl=False):
-        self.cleanDiagram()
+    def build_diagram(self, visitor,  shortUrl=False):
+        self.clean_diagram()
         self.visitor = visitor
-        self.getShortUrl() if shortUrl else self.postDiagram(self.visitor.convertToService())
+        self.get_short_url() if shortUrl else self.post_diagram(self.visitor.convert_to_service())
 
-    def setUrlDiagram(self,url):
+    def set_url_diagram(self, url):
         self.urlDiagram = self.CLASS_PREFIX_URL + url
 
-    def setDSLText(self, value):
+    def set_DSL_text(self, value):
         self.values = {'dsl_text': value}
 
-    def cleanDiagram(self):
-        self.postDiagram('')
+    def clean_diagram(self):
+        self.post_diagram('')
 
-    def postDiagram(self, value):
-        self.setDSLText(value)
-        return self.postResource(self.DRAW_URL, self.values).read()
+    def post_diagram(self, value):
+        self.set_DSL_text(value)
+        return self.post_resource(self.DRAW_URL, self.values).read()
 
-    def getShortUrl(self):
-        extractor = XPathExtractor().get_object(self.postDiagram(self.visitor.convertToService()))
+    def get_short_url(self):
+        extractor = XPathExtractor().get_object(self.post_diagram(self.visitor.convert_to_service()))
         self.shortUrl = extractor.xpath('//*[@id="content"]/p[4]/a')
         return self.shortUrl
 
-    def fetchFormat(self, format):
+    def fetch_format(self, diagramFormat):
         if not self.visitor:
             raise Exception('Diagram not submitted')
         try:
-            url = self.shortUrl if self.shortUrl else self.setUrlDiagram(self.visitor.convertToImport())
-            return url + '.' + self.FORMATS[format]
+            url = self.shortUrl if self.shortUrl else self.set_url_diagram(self.visitor.convert_to_import())
+            return url + '.' + self.FORMATS[diagramFormat]
         except AttributeError:
-            raise Exception('Invalid type of format: {0}'.format(format))
+            raise Exception('Invalid type of format: {0}'.format(diagramFormat))
