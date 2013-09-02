@@ -33,13 +33,29 @@ class YUMLVisitor(object):
         self.walk_connectors()
         return self.diagramService
 
+    def define_class(self,class_declaration):
+        if class_declaration not in self.definedClasses:
+            to_append = class_declaration.convert_to_service()
+            self.definedClasses.append(class_declaration)
+            self.visitedObjects.append(class_declaration)
+            return to_append
+        return class_declaration.reduced_convert_to_service()
+
+    def build_custom_connector(self, connector):
+        return '{0}{1}{2}'.format(self.define_class(connector.fromObject),connector.association,self.define_class(connector.ToObject))
+
     def walk_comments(self):
         for comment in self.diagram.comments:
             self.diagramService += comment.convert_to_service()+'\n'
             self.visitedObjects.append(comment)
 
     def walk_connectors(self):
-        pass
+        for connector in self.diagram.connectors:
+            if connector.fromObject in self.visitedObjects and connector.toObject in self.visitedObjects:
+                self.diagramService += connector.convert_to_service()
+            else:
+                self.diagramService += self.build_custom_connector(connector)
+            self.visitedObjects.append(connector)
 
     def walk_notes(self):
         for note in self.diagram.notes:

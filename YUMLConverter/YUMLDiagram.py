@@ -67,14 +67,15 @@ class YUMLDiagram(object):
         if isValidScale(scale):
             self.scale = None if scale == SCALE_NORMAL else scale
 
-    def add_relation(self, relation):
+    def add_relation(self, connector_var):
         try:
             for connector in self.connectors:
-                connector.is_same_connector(relation)
-            self.connectors.append(relation.check_objects(self))
+                connector.is_same_connector(connector_var)
+            connector_var.check_objects(self)
+            self.connectors.append(connector_var)
         except ExistingRelationException:
             #returns as it's trying to enter an existing relation in the diagram
-            return
+            pass
 
     def check_object(self, classObject):
         self.add_class(classObject)
@@ -128,7 +129,7 @@ class YUMLConnector(YUMLObject):
         raise NotImplementedError
 
     def convert_to_service(self):
-        return "[{0}]{1}[{2}]".format(self.fromObject, self.association, self.toObject)
+        return "[{0}]{1}[{2}]".format(self.fromObject.__name__, self.association, self.toObject.__name__)
 
     def check_objects(self, diagram):
         diagram.check_object(self.fromObject)
@@ -139,8 +140,8 @@ class YUMLClass(YUMLObject):
 
     CLASS_RULES = [ReservedClassName]
 
-    def __init__(self, classDeclaration):
-        self.classDeclaration = classDeclaration
+    def __init__(self, class_declaration):
+        self.classDeclaration = class_declaration
         self.introspect_class()
         self.checkRules(self.CLASS_RULES)
 
@@ -159,6 +160,9 @@ class YUMLClass(YUMLObject):
     def get_class_name(self):
         createvarIfNotExists(self, 'bg', None)
         return self.className+"{bg:{0}}".format(self.bg) if self.bg else self.className
+
+    def reduced_convert_to_service(self):
+        return "[{0}]".format(self.get_class_name())
 
     def convert_to_service(self):
         return "[{0}{1}{2}]".format(self.get_class_name(), self.get_attributes(), self.get_methods())
