@@ -1,3 +1,12 @@
+"""
+.. module:: YUMLReady Diagram module
+   :platform: Linux
+   :synopsis: Module to check some rules of the diagram related objects
+   :copyright: (c) 2013 by Ernesto Bossi.
+   :license: GPL v3.
+
+.. moduleauthor:: Ernesto Bossi <bossi.ernestog@gmail.com>
+"""
 import keyword
 
 

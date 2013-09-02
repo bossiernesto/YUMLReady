@@ -3,7 +3,7 @@
    :platform: Linux
    :synopsis:  Classes to interact with the YUML.me service
    :copyright: (c) 2013 by Ernesto Bossi.
-   :license: BSD.
+   :license: GPL v3.
 
 .. moduleauthor:: Ernesto Bossi <bossi.ernestog@gmail.com>
 """

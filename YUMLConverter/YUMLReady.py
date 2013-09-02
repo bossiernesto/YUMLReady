@@ -3,7 +3,7 @@
    :platform: Linux
    :synopsis: Module that implements the internal DSL to use with the YUMLReady library
    :copyright: (c) 2013 by Ernesto Bossi.
-   :license: BSD.
+   :license: GPL v3.
 
 .. moduleauthor:: Ernesto Bossi <bossi.ernestog@gmail.com>
 """
