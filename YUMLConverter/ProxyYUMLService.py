@@ -11,7 +11,7 @@ import urllib2
 import urllib
 from lxml import etree
 import io
-from utils.cookieJar import YUMLCookieJar
+from YUMLConverter.utils.cookieJar import YUMLCookieJar
 
 
 def isObjOfType(obj,_type):

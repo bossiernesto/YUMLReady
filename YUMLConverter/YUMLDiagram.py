@@ -8,8 +8,8 @@
 .. moduleauthor:: Ernesto Bossi <bossi.ernestog@gmail.com>
 """
 import inspect
-from YUMLRules import *
-from YUMLVisitor import YUMLVisitor
+from YUMLConverter.YUMLRules import *
+from YUMLConverter.YUMLVisitor import YUMLVisitor
 
 def createvarIfNotExists(obj, var, initial):
     try:
@@ -23,12 +23,12 @@ SIMPLE_ASSOCIATION = '->'
 CARDINALITY = '..'
 DIRECTIONAL_ASSOCIATION = '- >'
 AGGREGATION = '+->'
-AGGREGATION_WITH_NUMBER = lambda(number): '<>-{0}>'.format(number)
-AGGREGATION_WITH_NUMBERS = lambda(number, otherNumber): '<>-{0}>{1}'.format(number, otherNumber)
-COMPOSITION = lambda (number): '++-{0}>'.format(number)
+AGGREGATION_WITH_NUMBER = lambda number: '<>-{0}>'.format(number)
+AGGREGATION_WITH_NUMBERS = lambda number, otherNumber: '<>-{0}>{1}'.format(number, otherNumber)
+COMPOSITION = lambda number: '++-{0}>'.format(number)
 INHERITANCE = '^-'
 INTERFACE_INHERITANCE = '^-.-'
-DEPENDENCIES = lambda (text): '{0} -.->'.format(text)
+DEPENDENCIES = lambda text: '{0} -.->'.format(text)
 
 #Directions
 DIRECTION_Left_to_Right = 'LR'
@@ -44,7 +44,7 @@ SCALE_SMALL = "scale:80"
 SCALE_TINY = "scale:60"
 SCALE_NORMAL = ""
 
-isValidScale = lambda (scale): scale in VALID_SCALES
+isValidScale = lambda scale: scale in VALID_SCALES
 VALID_SCALES = [SCALE_HUGE, SCALE_BIG, SCALE_SMALL, SCALE_TINY, SCALE_NORMAL]
 
 VALID_COLORS = ["orange", "blue", "red", "black", "white", "brown", "magenta", "green", "pink", "violet", "grey"]
@@ -95,7 +95,7 @@ class YUMLDiagram(object):
 
 class YUMLObject(object):
 
-    def checkRules(self, rules):
+    def check_rules(self, rules):
         for rule in rules:
             rule().checkRule(self)
 
@@ -116,7 +116,7 @@ class YUMLConnector(YUMLObject):
         self.fromObject = fromObject
         self.association = associationType
         self.toObject = ToObject
-        self.checkRules(self.CONNECTOR_RULES)
+        self.check_rules(self.CONNECTOR_RULES)
 
     def is_same_connector(self, connector):
         if self.fromObject == connector.fromObject and self.toObject == connector.toObject:
@@ -140,16 +140,21 @@ class YUMLClass(YUMLObject):
 
     CLASS_RULES = [ReservedClassName]
 
-    def __init__(self, class_declaration):
-        self.classDeclaration = class_declaration
+    def __init__(self, class_declaration, silent_init=True):
+        self.class_declaration = class_declaration
+        self.silent_init = silent_init
         self.introspect_class()
-        self.checkRules(self.CLASS_RULES)
+        self.check_rules(self.CLASS_RULES)
+
+    getAttributes = lambda self, declaration: inspect.getmembers(declaration, lambda a: not(inspect.isroutine(a)))
 
     def introspect_class(self):
-        self.methods = inspect.getmembers(self.classDeclaration, predicate=inspect.ismethod)
-        attributes = inspect.getmembers(self.classDeclaration, lambda a: not(inspect.isroutine(a)))
+        self.methods = [method for method in inspect.getmembers(self.class_declaration, predicate=inspect.ismethod)]
+        if self.silent_init:
+            self.methods = [methods for methods in self.methods if methods[0] != '__init__']
+        attributes = self.getAttributes(self.class_declaration) + self.getAttributes(self.class_declaration())
         self.attributes = [a for a in attributes if not(a[0].startswith('__') and a[0].endswith('__'))]
-        self.className = self.classDeclaration.__name__
+        self.className = self.class_declaration.__name__
 
     def get_attributes(self):
         return '|' if not self.attributes else '|'+';'.join([attr[0] for attr in self.attributes])

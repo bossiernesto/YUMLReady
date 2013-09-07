@@ -9,12 +9,12 @@
 """
 import sys
 import string
-from YUMLDiagram import YUMLDiagram, VALID_COLORS, YUMLClass,YUMLComment,YUMLNote,DIRECRTION_Right_to_Left,\
+from YUMLConverter.YUMLDiagram import YUMLDiagram, VALID_COLORS, YUMLClass,YUMLComment,YUMLNote,DIRECRTION_Right_to_Left,\
 DIRECRTION_TopDown,DIRECTION_Left_to_Right,NOTE_ASSOCIATION,SIMPLE_ASSOCIATION,CARDINALITY,DIRECTIONAL_ASSOCIATION,AGGREGATION,AGGREGATION_WITH_NUMBER,\
 AGGREGATION_WITH_NUMBERS,COMPOSITION,INHERITANCE,INTERFACE_INHERITANCE,DEPENDENCIES,SCALE_HUGE,SCALE_BIG,SCALE_SMALL,SCALE_TINY,SCALE_NORMAL
 
 for color in VALID_COLORS:
-    setattr(sys.modules[__name__],string.upper(color),color)
+    setattr(sys.modules[__name__], string.upper(color), color)
 
 class YUMLConverter(object):
 
