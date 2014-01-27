@@ -3,7 +3,7 @@
    :platform: Linux
    :synopsis: small and simple cookie wrapper
    :copyright: (c) 2013 by Ernesto Bossi.
-   :license: GPL v3.
+   :license: BSD.
 
 .. moduleauthor:: Ernesto Bossi <bossi.ernestog@gmail.com>
 """
